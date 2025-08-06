@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.vscode/
+error.log
+package-lock.json
+C:\Users\coryl\OneDrive\Documents\GitJCU\workiz\hubspot.config.yml
+
+# HubSpot config file
+hubspot.config.yml

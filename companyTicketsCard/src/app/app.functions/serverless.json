@@ -1,0 +1,10 @@
+{
+
+"appFunctions": {
+
+"getTicketData":
+
+{ "file": "getTickets.js",
+"secrets": []
+
+} } }

@@ -1,0 +1,20 @@
+
+{ "name": "companyTicketsCard",
+
+"description": "All support tickets for a company",
+
+"uid": "companytickets001",
+
+"scopes": [
+
+"crm.objects.companies.read" ],
+
+"public": false,
+
+"extensions": {
+
+"crm": {
+
+"cards": [ { "file": "extensions/associated-tickets.json"}]
+
+} } }

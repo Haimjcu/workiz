@@ -1,0 +1,13 @@
+{
+
+"name": "get_company_tickets",
+
+"version": "0.1.0",
+
+"author": "Haim Lubin",
+
+"license": "MIT", "dependencies":
+
+{ "axios": "^0.27.2" }
+
+}

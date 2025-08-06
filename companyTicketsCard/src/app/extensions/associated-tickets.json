@@ -1,0 +1,17 @@
+{
+
+"type": "crm-card",
+
+"data": {
+
+"title": "Company Tickets",
+
+"uid": "companytickets001",
+
+"location": "crm.record.tab",
+
+"module": { "file": "AssociatedTickets.jsx" },
+
+"objectTypes": [ { "name": "companies" } ]
+
+} }
