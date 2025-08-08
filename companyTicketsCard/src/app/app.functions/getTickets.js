@@ -2,7 +2,7 @@ const axios = require('axios');
  
 exports.main = async () => {
   // console.log("we are connected");
-  const Bearer = process.env['ticketsDataBearer'];
+  const Bearer = process.env['ticketsDataBearer'] || '5Hq5LZJ14EDgx90BikeVEGCPM0ApIeT4';
   const axiosInstance = axios.create({
     headers: {
       'Content-Type': 'application/json',

@@ -1,46 +1,37 @@
 
- import { Text, Flex } from '@hubspot/ui-extensions';
-import { CrmAssociationTable } from '@hubspot/ui-extensions/crm';
+import { Box, Flex, Heading, Divider, Tag, Link } from '@hubspot/ui-extensions';
  
-export const DealPanelInner = ({ panelSubtitle, operator }) => {
+export const DealPanelInner = ({ panelSubtitle, comments }) => {
+
+  const showAttachments = (attachments) => {
+      return (
+        <>
+          <Heading variant="h3">Attachments</Heading>
+          {attachments.map((attachment, index) => (
+            <Link key={index} variant='primary' href={{url: attachment.content_url, external: true,}}>
+              {attachment.file_name}
+            </Link>
+            ))
+          }
+        </>
+      )
+
+
+  }
+
   return (
     <>
-      <Flex direction={'column'} gap={'lg'}>
-        <Text variant="microcopy">
-          This example is a card for contact records to display high-level associated deal information in a table.
-        </Text>
-        <Text format={panelSubtitle}></Text>
-        <CrmAssociationTable
-          objectTypeId="0-3"
-          propertyColumns={[
-            'dealname',
-            'hubspot_owner_id',
-            'amount',
-            'dealstage',
-          ]}
-          quickFilterProperties={['hubspot_owner_id', 'dealstage', 'amount']}
-          pageSize={10}
-          preFilters={[
-            {
-              operator: 'NOT_IN',
-              property: 'dealstage',
-              values: ['closedwon', 'closedlost'],
-            },
-            {
-              operator: operator,
-              property: 'amount',
-              value: 1000,
-            },
-          ]}
-          sort={[
-            {
-              direction: 1,
-              columnName: 'amount',
-            },
-          ]}
-          searchable={true}
-          pagination={true}
-        />
+    <Heading variant="h2">{panelSubtitle}</Heading>
+    <Divider />
+      <Flex direction="column" gap="large">
+        {comments.sort((a, b) => a.id - b.id).map((comment, index) => (
+          <>
+            <Box key={index} marginTop="md">
+              <Tag inline={true} variant="info">{comment.via.channel}</Tag>{comment.plain_body.replace(/&nbsp;/g, '') }
+            </Box>
+            {comment.attachments && comment.attachments.length > 0 ? showAttachments(comment.attachments): null}
+          </>
+        ))}
       </Flex>
     </>
   )

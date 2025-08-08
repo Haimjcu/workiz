@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { hubspot, Button, Text, Box, Flex, Heading, Divider }from "@hubspot/ui-extensions";
 import { TicketBox } from "./components/TicketBox";
+import { DealPanel } from "./components/DealPanel";
+import { DealPanelInner } from "./components/DealPanelInner";
 
 const Extension = () => {
   const [tickets, setTickets] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [subject, setSubject] = useState('');
 
   const getTickets = async () => {
   try {
@@ -41,25 +45,50 @@ const fetchTickets = async () => {
     fetchTickets();
   };
 
+  const handleCommentsButtonClick = (comments) => {
+    console.log('=== Clicked ===');
+    setComments(comments || []);
+    const panelId = 'comments';
+    setShowCommentsPanel(true); // Show panel via state
+  };
+
+  const panelId = 'comments';
+
   return (
     <>
-    <Box>
-      <Heading variant="h1">Support Tickets</Heading>
-      <Divider distance="extra-large"/>
-      <Flex direction="column" gap="extra-large">
-        {tickets.sort((a, b) => b.generated_timestamp - a.generated_timestamp).map((ticket, index) => (
-          <TicketBox key={index} ticket={ticket} />
-        ))}
-      </Flex>
-    </Box>
+      <DealPanel paneltitle={'Comments'} panelId={'comments'}>
+        <DealPanelInner panelSubtitle={subject} comments={comments} />
+      </DealPanel>
 
-          <Button onClick={handleButtonClick}>Refresh Tickets</Button>
-      {tickets && tickets.length > 0 && (
-        <Text>Found {tickets.length} tickets</Text>    
-      )}
-
+      <Box>
+        <Heading variant="h1">Support Tickets</Heading>
+        
+        {tickets && tickets.length > 0 && (<Text>Found {tickets.length} tickets</Text>)}
+        
+        <Flex direction="column" gap="extra-large">
+          {tickets.sort((a, b) => b.generated_timestamp - a.generated_timestamp).map((ticket, index) => (
+            <>
+            <Divider distance="large" />
+              <Flex direction="column" gap="small">
+                <TicketBox key={index} ticket={ticket} onButtonClick={handleCommentsButtonClick}/>
+                <Box>
+                  <Button variant="primary" onClick={(event, reactions) => { 
+                      setComments(ticket.comments || []),
+                      setSubject(ticket.subject || []), 
+                      reactions.openPanel(panelId) 
+                    }}>
+                    Comments: {ticket.count}
+                  </Button>  
+                </Box>
+              </Flex>
+            </>
+          ))}
+        </Flex>
+      </Box>
+      
+      <Button onClick={handleButtonClick}>Refresh Tickets</Button>
     </>
   )
 };
 
-hubspot.extend(() => <Extension />);
+hubspot.extend(({ actions }) => <Extension />);
