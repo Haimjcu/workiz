@@ -6,7 +6,7 @@ import {
   PanelSection,
 } from '@hubspot/ui-extensions';
  
-export const DealPanel = ({ paneltitle, panelId, children, customFooter }) => {
+export const TicketPanel = ({ paneltitle, panelId, children, customFooter }) => {
   return (
     <>
       <Panel title={paneltitle} id={panelId}>

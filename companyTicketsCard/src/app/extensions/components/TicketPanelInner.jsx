@@ -1,7 +1,7 @@
 
 import { Box, Flex, Heading, Divider, Tag, Link } from '@hubspot/ui-extensions';
  
-export const DealPanelInner = ({ panelSubtitle, comments }) => {
+export const TicketPanelInner = ({ panelSubtitle, comments }) => {
 
   const showAttachments = (attachments) => {
       return (

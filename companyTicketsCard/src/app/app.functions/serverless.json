@@ -3,8 +3,12 @@
 "appFunctions": {
 
 "getTicketData":
-
 { "file": "getTickets.js",
 "secrets": []
+},
+"summarizeTicketData":
+{ "file": "summarizeTickets.js",
+"secrets": []
+}
 
-} } }
+} }
