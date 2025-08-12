@@ -1,24 +1,2 @@
+{"name":"companyticketscard","version":"0.1.0","scripts":{"postinstall":"cd ./src/app/extensions/ && npm install && cd ../app.functions && npm install"},"author":{"name":"Haim Lubin","email":"cory.lubin@gmail.com"},"license":"MIT","dependencies":{"axios":"^1.11.0"}}
 
-{
-
-"name": "companyticketscard",
-
-"version": "0.1.0",
-
-"scripts": {
-
-"postinstall": "cd ./src/app/extensions/ && npm install && cd ../app.functions && npm install"
-
-},
-
-"author": {
-
-"name": "Haim Lubin",
-
-"email": "cory.lubin@gmail.com"
-
-},
-
-"license": "MIT"
-
-}

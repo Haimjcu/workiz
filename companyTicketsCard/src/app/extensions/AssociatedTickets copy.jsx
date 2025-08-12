@@ -9,7 +9,6 @@ const Extension = () => {
   const [comments, setComments] = useState([]);
   const [ticketsSummary, setSummary] = useState('');
   const [subject, setSubject] = useState('');
-  const [binId, setBinId] = useState('');
 
 const getTickets = async () => {
   try {
@@ -33,9 +32,7 @@ const fetchTickets = async () => {
   try {
     const ticketsRaw = await getTickets();
     console.log('=== Client: Final ticketsss ===');
-    setTickets(ticketsRaw.tickets || []);
-    setBinId(ticketsRaw.binId || '');
-        console.log('===ticketsss binid ===' + ticketsRaw.binId+'xx '+binId);
+    setTickets(ticketsRaw || []);
   } catch (error) {
     console.error('=== Client: Final error ===', error);
   }
@@ -80,54 +77,10 @@ const compressTicketsData = async (ticketsRaw) => {
     setShowCommentsPanel(true); // Show panel via state
   };
 
-  const formatTextForHubSpot = (inputText) => {
-     // Split text by actual \n characters (not \\n strings)
-  const lines = inputText.split('\\n');
-  
-  let components = [];
-  let key = 0;
-
-  
-  lines.forEach(line => {
-    // Skip empty lines
-    if (line.trim() === '') {
-      return;
-    }
-    
-    // Check if line contains **text** pattern
-    const boldPattern = /\*\*(.*?)\*\*/;
-    
-    if (boldPattern.test(line)) {
-      // Check if the entire line is just **text** (heading)
-      const fullMatch = line.match(/^\*\*(.*?)\*\*$/);
-      if (fullMatch) {
-        // Entire line is a heading
-        components.push(
-          React.createElement('Heading', { key: key++, variant: 'h3' }, fullMatch[1])
-        );
-      } else {
-        // Line contains **text** but has other content too
-        // Replace **text** with the text and keep everything else
-        const processedLine = line.replace(/\*\*(.*?)\*\*/g, '$1');
-        components.push(
-          React.createElement('Text', { key: key++ }, processedLine)
-        );
-      }
-    } else {
-      // Regular text line with no **text**
-      components.push(
-        React.createElement('Text', { key: key++ }, line)
-      );
-    }
-  });
-  
-  return components;
-  };
-  
-
-  const summarizeTickets = async (binId) => {
+  const summarizeTickets = async (tickets) => {
   try {
-      const response = await hubspot.serverless('summarizeTicketData', {parameters: {data: binId}});
+      const compressedTickets = await compressTicketsData(tickets);
+      const response = await hubspot.serverless('summarizeTicketData', {parameters: {data: compressedTickets.data[0]}});
       
       // Parse the JSON string response
       const parsedResponse = JSON.parse(response);
@@ -146,10 +99,10 @@ const compressTicketsData = async (ticketsRaw) => {
   }
 };
 
-const fetchSummary = async (binId) => {
+const fetchSummary = async (tickets) => {
   try {
         console.log('=== Client: Summaryyyyy ===');
-    const summary = await summarizeTickets(binId);
+    const summary = await summarizeTickets(tickets);
     console.log('=== Client: Summary ===');
     setSummary(summary || []);
   } catch (error) {
@@ -157,8 +110,8 @@ const fetchSummary = async (binId) => {
   }
 };
 
-  const handleSummarizeButtonClick = (binId) => {
-    fetchSummary(binId);
+  const handleSummarizeButtonClick = (tickets) => {
+    fetchSummary(tickets);
   };
 
   const panelId = 'comments';
@@ -174,9 +127,9 @@ const fetchSummary = async (binId) => {
         
         {tickets && tickets.length > 0 && (<Text>Found {tickets.length} tickets</Text>)}
 
-        <Button onClick={() =>handleSummarizeButtonClick(binId)}>Summarize All Tickets</Button>
+        <Button onClick={() =>handleSummarizeButtonClick(tickets)}>Summarize All Tickets</Button>
 
-        {ticketsSummary && (formatTextForHubSpot(ticketsSummary))}
+        {ticketsSummary && (<Text>Summary: {ticketsSummary}</Text>)}
         
         <Flex direction="column" gap="extra-large">
           {tickets.sort((a, b) => b.generated_timestamp - a.generated_timestamp).map((ticket, index) => (
