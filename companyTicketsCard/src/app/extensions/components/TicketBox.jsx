@@ -8,11 +8,6 @@ export const TicketBox = ({ ticket, onButtonClick }) => {
     return date.toLocaleString('en-GB');
   }
 
-  const handleClick = () => {
-    const comments = ticket.comments;
-    onButtonClick(comments);
-  };
-
   return (
     <>
       <Box>

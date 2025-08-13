@@ -2,9 +2,9 @@ const axios = require('axios');
  
 exports.main = async () => {
   // console.log("we are connected");
-  const Bearer = process.env.ticketsDataBearer || '5Hq5LZJ14EDgx90BikeVEGCPM0ApIeT4';
-  const XMasterKey = process.env.XMasterKey || '$2a$10$xl5rYbdZkfK1v3kxYw0pg.bbQCKXLy/obEy8DuHNV929GNTU2SAmm';
-  const XAccessKey = process.env.XAccessKey || '$2a$10$5FnDsCxu6AEJ2I9KdNz6MOKTnD8cvXlQgLSgNu.qWfIev8pTY/jD6';
+  const Bearer = process.env.ticketsDataBearer;
+  const XMasterKey = process.env.XMasterKey;
+  const XAccessKey = process.env.XAccessKey;
  
   const axiosInstance = axios.create({
     headers: {
@@ -87,14 +87,13 @@ exports.main = async () => {
   try {
     const ticketsData = await getTicketsData();
     const compressedTickets = await compressTicketsData(ticketsData);
-  //  const binId = await createJsonBin();
-const binId ="689b4089d0ea881f40576107";
-    //getSummary(binId, compressedTickets);
+    const binId = await createJsonBin();
+    getSummary(binId, compressedTickets);
 
     const returnValue = { statusCode: 200, body: { binId, tickets: ticketsData }};
     
     return JSON.stringify(returnValue);
   } catch (error) {
-    return { statusCode: 500, body: error };
+    return { statusCode: 500, body: error.message };
   }
 };

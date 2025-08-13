@@ -64,30 +64,6 @@ const Extension = () => {
     }
   };
 
-  const compressTicketsData = async (ticketsRaw) => {
-      return {
-          data: ticketsRaw.map(ticket => ({
-              comments: ticket.comments.map(comment => ({
-                  id: comment.id,
-                  author_id: comment.author_id,
-                  plain_body: comment.plain_body,
-                  attachments: comment.attachments.map(attachment => ({
-                      file_name: attachment.file_name
-                  })),
-                  viaChannel: comment.viaChannel || comment.via?.channel
-              })),
-              count: ticket.count,
-              viaChannel: ticket.viaChannel || ticket.via?.channel,
-              generated_timestamp: ticket.generated_timestamp,
-              subject: ticket.subject,
-              description: ticket.description,
-              priority: ticket.priority,
-              status: ticket.status,
-              requester_id: ticket.requester_id
-          }))
-      };
-  };
-
     useEffect(() => {
       fetchTickets();
     }, []);
@@ -95,19 +71,17 @@ const Extension = () => {
     const handleButtonClick = () => {
       setError(false);
       setTickets([]);
+      setSummary([]);
       fetchTickets();
     };
 
-    const handleCommentsButtonClick = (comments) => {
-      console.log('=== Clicked ===');
-      setComments(comments || []);
-      const panelId = 'comments';
-      setShowCommentsPanel(true); // Show panel via state
-    };
-
     const formatTextForHubSpot = (inputText) => {
+      if (!inputText || inputText.length < 1) {
+        return;
+      }
+
       // Split text by actual \n characters (not \\n strings)
-    const lines = inputText.split('\\n');
+    const lines = inputText.split('\n');
     
     let components = [];
     let key = 0;
@@ -150,7 +124,7 @@ const Extension = () => {
     };
     
 
-    const summarizeTickets = async (binId) => {
+    const summarizeTickets = async (isPolling = false) => {
     try {
         const response = await hubspot.serverless('summarizeTicketData', {parameters: {data: binId}});
         
@@ -160,43 +134,86 @@ const Extension = () => {
         if (parsedResponse.statusCode === 200) {
           return parsedResponse.body;
         } else {
-          setLoadingSummary(false);
-          setErrorText(parsedResponse.body || '');
+          if (!isPolling) {
+            setLoadingSummary(false);
+            setErrorText(parsedResponse.body || '');
+            setErrorTitle('Trouble getting Summary.');
+            setErrorTryAgainProcess('summary' || '');
+            setError(true);
+            setStatus(`Error: ${parsedResponse.body} `);
+          }
+          console.error(`Error: ${parsedResponse.body}`);
+          return null; // Return null to indicate failure
+        }
+      
+      } catch (error) {
+        if (!isPolling) {
+          setErrorText(error.message || '');
           setErrorTitle('Trouble getting Summary.');
           setErrorTryAgainProcess('summary' || '');
           setError(true);
-          setStatus(`Error: ${parsedResponse.body} `);
-          console.error(`Error: ${parsedResponse.body}`);
         }
-        return response.body;
-
-      //  const response = await hubspot.serverless('summarizeTicketData', {parameters: {data: compressedTickets.data[0]} });
-        
-      } catch (error) {
-      setErrorText(error.message || '');
-      setErrorTitle('Trouble getting Summary.');
-      setErrorTryAgainProcess('summary' || '');
-      setError(true);
-      console.error('Error:', error);
+          console.error('Error:', error);
+          return null; // Return null to indicate failure
     }
   };
 
-  const fetchSummary = async (binId) => {
-    try {
-      setLoadingSummary(true);
-          console.log('=== Client: Summaryyyyy ===');
-      const summary = await summarizeTickets(binId);
-      console.log('=== Client: Summary ===');
-      setLoadingSummary(false);
-      setSummary(summary || []);
-    } catch (error) {
-      console.error('=== Client: summary error ===', error);
+const fetchSummary = async () => {
+  const maxAttempts = 12;
+  const intervalMs = 5000; // 5 seconds
+  
+  try {
+    setLoadingSummary(true);
+    setError(false); // Clear any previous errors
+    console.log('=== Client: Starting Summary Polling ===');
+    
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      console.log(`=== Client: Summary attempt ${attempt}/${maxAttempts} ===`);
+      
+      const summary = await summarizeTickets(true); // Pass true to indicate polling
+      
+      if (summary && summary!=='new') {
+        // Success - we got results
+        console.log('=== Client: Summary successful ===');
+        setLoadingSummary(false);
+        setSummary(summary || []);
+        return; // Exit the function successfully
+      }
+      
+      if (attempt >= maxAttempts) {
+        // Max attempts reached
+        console.log('=== Client: Summary max attempts reached ===');
+        break; // Exit the loop
+      }
+      
+      // Wait before next attempt (except after the last attempt)
+      if (attempt < maxAttempts) {
+        console.log(`=== Client: Retrying in ${intervalMs/1000} seconds ===`);
+        await new Promise(resolve => setTimeout(resolve, intervalMs));
+      }
     }
-  };
-
-    const handleSummarizeButtonClick = (binId) => {
+    
+    // If we get here, all attempts failed
+    console.error('=== Client: Summary polling failed - max attempts reached ===');
+    setLoadingSummary(false);
+    setErrorText('Failed to get summary after maximum attempts');
+    setErrorTitle('Summary Timeout');
+    setErrorTryAgainProcess('summary');
+    setError(true);
+    
+  } catch (error) {
+    console.error('=== Client: Summary polling failed with error ===', error);
+    setLoadingSummary(false);
+    setErrorText(error.message || 'Failed to get summary');
+    setErrorTitle('Summary Error');
+    setErrorTryAgainProcess('summary');
+    setError(true);
+  }
+};
+    const handleSummarizeButtonClick = () => {
       setError(false);
-      fetchSummary(binId);
+      setSummary([]);
+      fetchSummary();
     };
 
   const panelId = 'comments';
@@ -218,26 +235,29 @@ const Extension = () => {
           {errorTryAgainProcess==='tickets' ? 
             (<Button onClick={handleButtonClick}>Try again</Button>)
             :
-            (<Button onClick={handleSummarizeButtonClick(binId)}>Try again</Button>)
+            (<Button onClick={handleSummarizeButtonClick}>Try again</Button>)
           }
         </ErrorState>)}
         
         {tickets && tickets.length > 0 && (<Text>Found {tickets.length} tickets</Text>)}
 
         {!isInitializing && !isError && (<LoadingButton loading={isLoadingTickets} onClick={handleButtonClick}>Refresh Tickets</LoadingButton>)}
+        {tickets && tickets.length > 0 && !isError &&(<LoadingButton loading={isLoadingSummary} onClick={handleSummarizeButtonClick}>Summarize All Tickets</LoadingButton>)}
 
-        {tickets && tickets.length > 0 && (<LoadingButton loading={isLoadingSummary} onClick={() =>handleSummarizeButtonClick(binId)}>Summarize All Tickets</LoadingButton>)}
         
-        {ticketsSummary && (<Divider distance="large" />)}
+        <Divider distance="large" />
         
-        {ticketsSummary && (formatTextForHubSpot(ticketsSummary))}
+        {ticketsSummary && (<>
+        <Heading variant="h3">Summary</Heading>
+        {formatTextForHubSpot(ticketsSummary)}
+          </>)}
         
         {!isLoadingTickets && (<Flex direction="column" gap="extra-large">
           {tickets.sort((a, b) => b.generated_timestamp - a.generated_timestamp).map((ticket, index) => (
             <>
-            <Divider distance="large" />
+            
               <Flex direction="column" gap="small">
-                <TicketBox key={index} ticket={ticket} onButtonClick={handleCommentsButtonClick}/>
+                <TicketBox key={index} ticket={ticket}/>
                 <Box>
                   <Button variant="primary" onClick={(event, reactions) => { 
                       setComments(ticket.comments || []),
@@ -248,6 +268,7 @@ const Extension = () => {
                   </Button>  
                 </Box>
               </Flex>
+              <Divider distance="large" />
             </>
           ))}
         </Flex>
@@ -256,9 +277,16 @@ const Extension = () => {
       
       {!isLoadingTickets && !isInitializing && !isError && tickets && tickets.length > 0 && (
         <>
-        <Divider distance="large" />
         <Button onClick={handleButtonClick}>Refresh Tickets</Button>
+        <LoadingButton loading={isLoadingSummary} onClick={handleSummarizeButtonClick}>Summarize All Tickets</LoadingButton>
       </>)}
+
+      {ticketsSummary && !isLoadingTickets && !isInitializing && !isError &&( <> 
+      <Divider distance="large" />
+      <Heading variant="h3">Summary</Heading>
+      {formatTextForHubSpot(ticketsSummary)}
+      </>)}
+
     </>
   )
 };
