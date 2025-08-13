@@ -586,159 +586,46 @@
             }
         },
         {
-            "id": 8,
-            "module": "regexp:Replace",
+            "id": 12,
+            "module": "json:TransformToJSON",
             "version": 1,
-            "parameters": {},
+            "parameters": {
+                "space": ""
+            },
             "mapper": {
-                "text": "{{2.textResponse}}",
-                "value": "\\\\n",
-                "global": true,
-                "pattern": "\\n",
-                "multiline": false,
-                "sensitive": true,
-                "singleline": false
+                "object": "{{2.textResponse}}"
             },
             "metadata": {
                 "designer": {
-                    "x": 520,
-                    "y": -6
-                },
-                "restore": {
-                    "expect": {
-                        "global": {
-                            "mode": "chose"
-                        },
-                        "multiline": {
-                            "mode": "chose"
-                        },
-                        "sensitive": {
-                            "mode": "chose"
-                        },
-                        "singleline": {
-                            "mode": "chose"
-                        }
-                    }
-                },
-                "expect": [
-                    {
-                        "name": "pattern",
-                        "type": "text",
-                        "label": "Pattern",
-                        "required": true
-                    },
-                    {
-                        "name": "value",
-                        "type": "text",
-                        "label": "New value"
-                    },
-                    {
-                        "name": "global",
-                        "type": "boolean",
-                        "label": "Global match",
-                        "required": true
-                    },
-                    {
-                        "name": "sensitive",
-                        "type": "boolean",
-                        "label": "Case sensitive",
-                        "required": true
-                    },
-                    {
-                        "name": "multiline",
-                        "type": "boolean",
-                        "label": "Multiline",
-                        "required": true
-                    },
-                    {
-                        "name": "singleline",
-                        "type": "boolean",
-                        "label": "Singleline",
-                        "required": true
-                    },
-                    {
-                        "name": "text",
-                        "type": "text",
-                        "label": "Text"
-                    }
-                ]
-            }
-        },
-        {
-            "id": 7,
-            "module": "regexp:Replace",
-            "version": 1,
-            "parameters": {},
-            "mapper": {
-                "text": "{{8.text}}",
-                "value": "\\\"$1\\\"",
-                "global": true,
-                "pattern": "\"([^\"]*null[^\"]*)\"",
-                "multiline": false,
-                "sensitive": true,
-                "singleline": false
-            },
-            "metadata": {
-                "designer": {
-                    "x": 739,
+                    "x": 609,
                     "y": -5
                 },
                 "restore": {
-                    "expect": {
-                        "global": {
-                            "mode": "chose"
-                        },
-                        "multiline": {
-                            "mode": "chose"
-                        },
-                        "sensitive": {
-                            "mode": "chose"
-                        },
-                        "singleline": {
-                            "mode": "chose"
+                    "parameters": {
+                        "space": {
+                            "label": "Empty"
                         }
                     }
                 },
+                "parameters": [
+                    {
+                        "name": "space",
+                        "type": "select",
+                        "label": "Indentation",
+                        "validate": {
+                            "enum": [
+                                "tab",
+                                "2",
+                                "4"
+                            ]
+                        }
+                    }
+                ],
                 "expect": [
                     {
-                        "name": "pattern",
-                        "type": "text",
-                        "label": "Pattern",
-                        "required": true
-                    },
-                    {
-                        "name": "value",
-                        "type": "text",
-                        "label": "New value"
-                    },
-                    {
-                        "name": "global",
-                        "type": "boolean",
-                        "label": "Global match",
-                        "required": true
-                    },
-                    {
-                        "name": "sensitive",
-                        "type": "boolean",
-                        "label": "Case sensitive",
-                        "required": true
-                    },
-                    {
-                        "name": "multiline",
-                        "type": "boolean",
-                        "label": "Multiline",
-                        "required": true
-                    },
-                    {
-                        "name": "singleline",
-                        "type": "boolean",
-                        "label": "Singleline",
-                        "required": true
-                    },
-                    {
-                        "name": "text",
-                        "type": "text",
-                        "label": "Text"
+                        "name": "object",
+                        "type": "any",
+                        "label": "Object"
                     }
                 ]
             }
@@ -755,7 +642,7 @@
                 "ca": "",
                 "qs": [],
                 "url": "https://api.jsonbin.io/v3/b/{{1.binId}}",
-                "data": "{ \"summary\": \"{{7.text}}\"}",
+                "data": "{ \"summary\": {{12.json}}}",
                 "gzip": true,
                 "method": "put",
                 "headers": [
