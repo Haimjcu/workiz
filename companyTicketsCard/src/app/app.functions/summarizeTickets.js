@@ -40,6 +40,6 @@ exports.main = async (parameters) => {
     
     return JSON.stringify(returnValue);
   } catch (error) {
-    return { statusCode: 500, body: 'An error occurred' };
+    return { statusCode: 500, body: error };
   }
 };

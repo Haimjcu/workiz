@@ -95,6 +95,6 @@ const binId ="689b4089d0ea881f40576107";
     
     return JSON.stringify(returnValue);
   } catch (error) {
-    return { statusCode: 500, body: 'An error occurred' };
+    return { statusCode: 500, body: error };
   }
 };
