@@ -139,27 +139,37 @@ exports.main = async () => {
   try {
     // Step 1: Fetch raw ticket data
     const ticketsData = await getTicketsData();
-    
-    // Step 2: Compress the ticket data to reduce payload size
-    const compressedTickets = await compressTicketsData(ticketsData);
-    
-    // Step 3: Create a new JSONBin for storing processed data
-    const binId = await createJsonBin();
-    
-    // Step 4: Send data for summary processing (fire and forget)
-    // Note: Not awaiting this call as it appears to be asynchronous processing
-    getSummary(binId, compressedTickets);
 
-    // Return successful response with bin ID and original ticket data
-    const returnValue = { 
-      statusCode: 200, 
-      body: { 
-        binId, 
-        tickets: ticketsData 
-      }
-    };
+    if(ticketsData.length > 0){
     
-    return JSON.stringify(returnValue);
+      // Step 2: Compress the ticket data to reduce payload size
+      const compressedTickets = await compressTicketsData(ticketsData);
+      
+      // Step 3: Create a new JSONBin for storing processed data
+      const binId = await createJsonBin();
+      
+      // Step 4: Send data for summary processing (fire and forget)
+      // Note: Not awaiting this call as it appears to be asynchronous processing
+      getSummary(binId, compressedTickets);
+
+      // Return successful response with bin ID and original ticket data
+      const returnValue = { 
+        statusCode: 200, 
+        body: { 
+          binId, 
+          tickets: ticketsData 
+        }
+      };
+      
+      return JSON.stringify(returnValue);
+    } 
+
+    else {
+      return JSON.stringify({ 
+      statusCode: 500, 
+      body: 'No Tickets Found'
+    });
+    }
     
   } catch (error) {
     // Return error response with 500 status code

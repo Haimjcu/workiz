@@ -358,7 +358,7 @@ const Extension = () => {
         )}
 
         {/* Initial Action Buttons */}
-        {!isInitializing && !isError && (
+        {!isInitializing && (!isError || errorTryAgainProcess==='summary') && (
           <LoadingButton loading={isLoadingTickets} onClick={handleRefreshClick}>
             Refresh Tickets
           </LoadingButton>
